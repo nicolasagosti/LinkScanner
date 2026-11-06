@@ -9,6 +9,7 @@ import com.linkscanner.config.DetectionProperties;
 import com.linkscanner.dtos.AnalyzeResponse;
 import com.linkscanner.entities.Finding;
 import com.linkscanner.entities.ParsedUrl;
+import com.linkscanner.entities.Verdict;
 import com.linkscanner.services.heuristics.Heuristic;
 
 @Service
@@ -27,7 +28,7 @@ public class LinkAnalysisService {
 		this.detection = detection;
 	}
 
-	public AnalyzeResponse analyze(String rawUrl) {
+	public AnalyzeResponse analyze(String rawUrl, boolean deepScan) {
 		ParsedUrl url = urlParser.parse(rawUrl);
 		List<Finding> findings = heuristics.stream()
 				.map(heuristic -> heuristic.evaluate(url))
@@ -35,7 +36,8 @@ public class LinkAnalysisService {
 				.toList();
 		boolean official = detection.isOfficialDomain(url.registrableDomain());
 		AnalyzeResponse analysis = AnalyzeResponse.of(url.unicodeHost(), official, findings);
-		return shouldScanContent(url) ? contentScans.start(url.normalizedUrl(), analysis) : analysis;
+		boolean worthScanning = deepScan || analysis.verdict() == Verdict.SUSPICIOUS;
+		return worthScanning && canScanContent(url) ? contentScans.start(url.normalizedUrl(), analysis) : analysis;
 	}
 
 	public Optional<AnalyzeResponse> scanResult(String scanId) {
@@ -43,7 +45,7 @@ public class LinkAnalysisService {
 	}
 
 	/** Sin sufijo público (IPs, hosts internos) no se manda a terceros: podría ser una dirección interna. */
-	private boolean shouldScanContent(ParsedUrl url) {
+	private boolean canScanContent(ParsedUrl url) {
 		return contentScans.enabled() && !url.publicSuffix().isEmpty();
 	}
 

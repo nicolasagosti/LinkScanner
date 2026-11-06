@@ -30,7 +30,7 @@ public class AnalyzeController {
 
 	@PostMapping("/analyze")
 	public AnalyzeResponse analyze(@Valid @RequestBody AnalyzeRequest request) {
-		return analysisService.analyze(request.url());
+		return analysisService.analyze(request.url(), Boolean.TRUE.equals(request.deepScan()));
 	}
 
 	@GetMapping("/analyze/{scanId}")

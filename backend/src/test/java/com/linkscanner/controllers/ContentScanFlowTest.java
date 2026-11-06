@@ -5,7 +5,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.ResourceAccessException;
 
 import com.jayway.jsonpath.JsonPath;
@@ -62,8 +62,16 @@ class ContentScanFlowTest {
 	}
 
 	private ResultActions analyze(String url) throws Exception {
-		return mvc.perform(post("/api/v1/analyze").contentType(MediaType.APPLICATION_JSON)
-				.content("{\"url\":\"" + url + "\"}"));
+		return post("{\"url\":\"" + url + "\",\"deepScan\":true}");
+	}
+
+	private ResultActions analyzeWithoutDeepScan(String url) throws Exception {
+		return post("{\"url\":\"" + url + "\"}");
+	}
+
+	private ResultActions post(String body) throws Exception {
+		return mvc.perform(MockMvcRequestBuilders.post("/api/v1/analyze").contentType(MediaType.APPLICATION_JSON)
+				.content(body));
 	}
 
 	private String scanIdOf(String url) throws Exception {
@@ -72,6 +80,30 @@ class ContentScanFlowTest {
 
 	private ResultActions poll(String scanId) throws Exception {
 		return mvc.perform(get("/api/v1/analyze/" + scanId));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://promo-regalos.com/", "https://mi-tienda.xyz/", "https://www.mercadopago.com.ar/",
+			"https://rnercadopago.com/" })
+	void onlySuspiciousLinksReachTheServicesByDefault(String url) throws Exception {
+		analyzeWithoutDeepScan(url)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.contentScan").value("SKIPPED"))
+				.andExpect(jsonPath("$.scanId").doesNotExist());
+
+		verify(urlscan, never()).submit(any());
+		verify(virusTotal, never()).submit(any());
+	}
+
+	@Test
+	void suspiciousLinksAreScannedWithoutAskingAndCanBecomeDangerous() throws Exception {
+		String response = analyzeWithoutDeepScan("https://bit.ly/abc")
+				.andExpect(jsonPath("$.verdict").value("SUSPICIOUS"))
+				.andExpect(jsonPath("$.contentScan").value("PENDING"))
+				.andReturn().getResponse().getContentAsString();
+		when(virusTotal.check("v-id")).thenReturn(ScanOutcome.MALICIOUS);
+
+		poll(JsonPath.read(response, "$.scanId")).andExpect(jsonPath("$.verdict").value("DANGEROUS"));
 	}
 
 	@Test

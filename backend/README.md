@@ -58,7 +58,15 @@ export URLSCAN_API_KEY='tu-key'
 export VIRUSTOTAL_API_KEY='tu-key'
 ```
 
-Todo link público se manda a los dos servicios, incluso los oficiales y los que ya salen `DANGEROUS`, así que cada análisis gasta cuota. **Si cualquiera de los dos lo marca como malicioso, el veredicto es `DANGEROUS`.** En VirusTotal cuenta como malicioso a partir de 2 motores (`min-malicious-engines`).
+Para no gastar cuota ni demorar cada link, por defecto solo se manda a los dos servicios lo que las heurísticas dejan en `SUSPICIOUS`, que es donde su respuesta puede cambiar el veredicto. Para revisar cualquier otro link público, incluso uno oficial o ya `DANGEROUS`, agregá `"deepScan": true` al pedido:
+
+```bash
+curl -X POST localhost:8080/api/v1/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://example.com/","deepScan":true}'
+```
+
+**Si cualquiera de los dos lo marca como malicioso, el veredicto es `DANGEROUS`.** En VirusTotal cuenta como malicioso a partir de 2 motores (`min-malicious-engines`).
 
 Lo que recibe VirusTotal queda visible para su comunidad, así que no se le mandan la query ni el fragmento. El plan gratuito permite 4 pedidos por minuto y 500 por día, y no se puede usar en productos comerciales.
 
@@ -68,7 +76,7 @@ Si `contentScan` viene en `PENDING`, consultá `GET /api/v1/analyze/{scanId}` ca
 |---|---|
 | `PENDING` | Sigue en curso |
 | `COMPLETED` | Respondieron todos los servicios, y su resultado ya está en el veredicto |
-| `SKIPPED` | No se escaneó: no es un sitio público (IP o host interno) o no hay API key |
+| `SKIPPED` | No se escaneó: no hacía falta y no se pidió `deepScan`, no es un sitio público (IP o host interno) o no hay API key |
 | `UNAVAILABLE` | No se pudo verificar el contenido. **No significa que esté limpio** |
 
 Los análisis en curso se guardan en memoria durante 15 minutos: si el backend se reinicia, esos `scanId` devuelven 404.

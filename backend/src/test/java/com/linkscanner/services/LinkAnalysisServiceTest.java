@@ -18,6 +18,10 @@ class LinkAnalysisServiceTest {
 	@Autowired
 	private LinkAnalysisService service;
 
+	private AnalyzeResponse analyze(String url) {
+		return service.analyze(url, false);
+	}
+
 	@ParameterizedTest
 	@CsvSource({
 			"https://www.mercadopago.com.ar/login/verificar",
@@ -32,7 +36,7 @@ class LinkAnalysisServiceTest {
 			"https://www.paypal.com/signin",
 	})
 	void officialDomainsAreSafe(String url) {
-		AnalyzeResponse result = service.analyze(url);
+		AnalyzeResponse result = analyze(url);
 		assertThat(result.verdict()).isEqualTo(Verdict.SAFE);
 		assertThat(result.officialDomain()).isTrue();
 	}
@@ -46,33 +50,33 @@ class LinkAnalysisServiceTest {
 			"https://macroeconomia.com/",
 	})
 	void linksWithoutSignalsOrVerificationAreUnknownNotSafe(String url) {
-		assertThat(service.analyze(url).verdict()).isEqualTo(Verdict.UNKNOWN);
+		assertThat(analyze(url).verdict()).isEqualTo(Verdict.UNKNOWN);
 	}
 
 	@Test
 	void anotherCountryVersionOfABrandIsNotReportedAsEmbedded() {
-		AnalyzeResponse result = service.analyze("https://www.mercadopago.com.uy/");
+		AnalyzeResponse result = analyze("https://www.mercadopago.com.uy/");
 		assertThat(result.verdict()).isEqualTo(Verdict.SUSPICIOUS);
 		assertThat(result.findings()).extracting(Finding::code).containsExactly("BRAND_MENTION");
 	}
 
 	@Test
 	void anOfficialDomainInsideSubdomainsIsStillReportedWhenTheSuffixIsReused() {
-		assertThat(service.analyze("https://login.mercadopago.com.ar.xyz/").findings())
+		assertThat(analyze("https://login.mercadopago.com.ar.xyz/").findings())
 				.extracting(Finding::code).contains("BRAND_DOMAIN_EMBEDDED");
 	}
 
 	@Test
 	void freeHostingIsAWeakSignalThatDoesNotApplyToThePlatformItself() {
-		AnalyzeResponse hosted = service.analyze("https://u8nxq-0r4-shnd.pages.dev/");
+		AnalyzeResponse hosted = analyze("https://u8nxq-0r4-shnd.pages.dev/");
 		assertThat(hosted.findings()).extracting(Finding::code).containsExactly("FREE_HOSTING");
 		assertThat(hosted.verdict()).isEqualTo(Verdict.UNKNOWN);
-		assertThat(service.analyze("https://pages.dev/").findings()).isEmpty();
+		assertThat(analyze("https://pages.dev/").findings()).isEmpty();
 	}
 
 	@Test
 	void freeHostingAddsUpWithABrandMention() {
-		AnalyzeResponse result = service.analyze("https://prestamo-santander-cliente.vercel.app/");
+		AnalyzeResponse result = analyze("https://prestamo-santander-cliente.vercel.app/");
 		assertThat(result.findings()).extracting(Finding::code).containsExactly("BRAND_MENTION", "FREE_HOSTING");
 		assertThat(result.score()).isEqualTo(55);
 	}
@@ -92,7 +96,7 @@ class LinkAnalysisServiceTest {
 			"https://galicia-verificacion.com/, BRAND_MENTION",
 	})
 	void phishingLinksAreDangerous(String url, String expectedFinding) {
-		AnalyzeResponse result = service.analyze(url);
+		AnalyzeResponse result = analyze(url);
 		assertThat(result.verdict()).isEqualTo(Verdict.DANGEROUS);
 		assertThat(result.findings()).extracting(Finding::code).contains(expectedFinding);
 	}
@@ -106,28 +110,28 @@ class LinkAnalysisServiceTest {
 			"https://соса.com/, HOMOGLYPH",
 	})
 	void riskySignalsAreSuspicious(String url, String expectedFinding) {
-		AnalyzeResponse result = service.analyze(url);
+		AnalyzeResponse result = analyze(url);
 		assertThat(result.verdict()).isEqualTo(Verdict.SUSPICIOUS);
 		assertThat(result.findings()).extracting(Finding::code).contains(expectedFinding);
 	}
 
 	@Test
 	void weakSignalsAloneDoNotRaiseTheVerdict() {
-		AnalyzeResponse result = service.analyze("https://mi-tienda.xyz/");
+		AnalyzeResponse result = analyze("https://mi-tienda.xyz/");
 		assertThat(result.verdict()).isEqualTo(Verdict.UNKNOWN);
 		assertThat(result.findings()).extracting(Finding::code).containsExactly("SUSPICIOUS_TLD");
 	}
 
 	@Test
 	void countsSubdomainsWithoutWww() {
-		assertThat(service.analyze("https://www.a.b.example.com/").findings()).isEmpty();
-		assertThat(service.analyze("https://a.b.c.example.com/").findings())
+		assertThat(analyze("https://www.a.b.example.com/").findings()).isEmpty();
+		assertThat(analyze("https://a.b.c.example.com/").findings())
 				.extracting(Finding::code).containsExactly("EXCESSIVE_SUBDOMAINS");
 	}
 
 	@Test
 	void findsAccentedKeywordsAndAddsWeights() {
-		AnalyzeResponse result = service.analyze("https://bbva-ayuda.xyz/verificaci%C3%B3n");
+		AnalyzeResponse result = analyze("https://bbva-ayuda.xyz/verificaci%C3%B3n");
 		assertThat(result.findings()).extracting(Finding::code)
 				.containsExactly("BRAND_MENTION", "PHISHING_KEYWORDS", "SUSPICIOUS_TLD");
 		assertThat(result.score()).isEqualTo(75);
@@ -135,7 +139,7 @@ class LinkAnalysisServiceTest {
 
 	@Test
 	void capsTheScoreAt100() {
-		AnalyzeResponse result = service.analyze("https://user@rnercadopago.a.b.c.xyz/login");
+		AnalyzeResponse result = analyze("https://user@rnercadopago.a.b.c.xyz/login");
 		assertThat(result.score()).isEqualTo(100);
 	}
 
