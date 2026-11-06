@@ -3,6 +3,8 @@
     <string name="app_name">LinkScanner</string>
 
     <string name="main_description">Revisa cada link antes de abrirlo. Para eso tiene que ser tu navegador predeterminado: después podés abrir el link en tu navegador de siempre.</string>
+    <string name="privacy_notice">Para analizarlos, los links que abrís se envían a nuestro servidor. Los que parecen sospechosos, y los que pedís revisar a fondo, también se envían a urlscan.io y VirusTotal. Lo que recibe VirusTotal queda visible para su comunidad, sin los datos que van después de ? o #.</string>
+    <string name="privacy_link">Política de privacidad: https://github.com/nicolasagosti/LinkScanner/blob/main/PRIVACY.md</string>
     <string name="role_active">Ya es tu navegador predeterminado.</string>
     <string name="role_inactive">Todavía no es tu navegador predeterminado.</string>
     <string name="set_default">Elegir como predeterminado</string>

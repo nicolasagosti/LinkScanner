@@ -39,8 +39,23 @@ Solo recibe los links que Android le entrega al navegador predeterminado. Quedan
 - La navegación dentro de otro navegador.
 - Custom Tabs de apps que eligen un navegador específico.
 
-## Antes de publicar
+## Publicar una versión
 
-- El ícono es uno genérico del sistema.
+La versión release apunta al backend publicado y solo acepta HTTPS. Se firma con una clave que no va al repo, configurada en `android/keystore.properties`:
+
+```properties
+storeFile=/ruta/absoluta/a/la/clave.jks
+storePassword=...
+keyAlias=linkscanner
+keyPassword=...
+```
+
+```bash
+./gradlew assembleRelease   # genera app/build/outputs/apk/release/app-release.apk
+```
+
+Antes de cada versión, subí `versionCode` y `versionName` en `app/build.gradle.kts`. **Guardá una copia de la clave y sus contraseñas fuera de esta compu:** sin ellas no se pueden publicar actualizaciones para quienes ya instalaron la app.
+
+## Pendiente
+
 - La lista aparece en cada link si hay más de un navegador: conviene permitir elegir uno y recordarlo.
-- La versión release solo acepta HTTPS, así que necesita un backend publicado.

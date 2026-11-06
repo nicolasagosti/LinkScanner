@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="launcher_background">#2456C9</color>
     <color name="verdict_safe">#1B7A43</color>
     <color name="verdict_unknown">#5C6470</color>
     <color name="verdict_suspicious">#A86400</color>
