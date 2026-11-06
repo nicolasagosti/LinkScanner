@@ -42,7 +42,7 @@ class ScanBudgetTest {
 	private final MovableClock clock = new MovableClock();
 
 	private ScanBudget budget(int perMinute, int perDay) {
-		return new ScanBudget(new LimitsProperties(1, perMinute, perDay), clock);
+		return new ScanBudget(new LimitsProperties(1, perMinute, perDay, ""), clock);
 	}
 
 	@Test

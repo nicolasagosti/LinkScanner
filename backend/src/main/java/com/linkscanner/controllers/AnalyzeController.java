@@ -34,7 +34,7 @@ public class AnalyzeController {
 
 	@PostMapping("/analyze")
 	public AnalyzeResponse analyze(@Valid @RequestBody AnalyzeRequest request, HttpServletRequest http) {
-		if (!rateLimiter.tryAcquire(http.getRemoteAddr())) {
+		if (!rateLimiter.tryAcquire(http)) {
 			throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Demasiados pedidos. Probá de nuevo en un minuto");
 		}
 		return analysisService.analyze(request.url(), Boolean.TRUE.equals(request.deepScan()));

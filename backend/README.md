@@ -103,7 +103,7 @@ Variables de entorno:
 |---|---|
 | `PORT` | Puerto donde escucha. Por defecto, 8080 |
 | `URLSCAN_API_KEY`, `VIRUSTOTAL_API_KEY` | Activan cada servicio externo. Cargalas como secretos del hosting, nunca en el repo |
-| `FORWARD_HEADERS_STRATEGY` | Poné `native` si hay un proxy delante, que es lo habitual en un hosting. Sin eso, todos los usuarios cuentan como una sola IP y comparten el límite. Sin proxy, dejala en `none` |
+| `CLIENT_IP_HEADER` | Header donde el proxy del hosting informa la IP del cliente. En Railway, `X-Real-IP`. Sin un proxy que lo reescriba, dejala vacía: si no, cualquiera podría falsificarlo y saltearse el límite |
 
 Tiene que correr **en una sola instancia y siempre encendida**: los análisis en curso y los límites viven en memoria. El servicio debe ofrecer HTTPS, porque la app Android en versión release no acepta otra cosa. Para comprobar que está viva, usá `GET /actuator/health`.
 
