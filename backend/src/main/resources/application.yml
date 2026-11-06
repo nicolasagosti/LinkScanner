@@ -1,5 +1,8 @@
 server:
   port: ${PORT:8080}
+  # Detrás de un proxy, poner "native" para ver la IP real del cliente. Sin proxy dejar "none":
+  # cualquiera podría falsificar su IP con un header y saltearse el límite por cliente.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
 
 spring:
   application:
@@ -12,6 +15,12 @@ spring:
       enabled: true
 
 linkscanner:
+  limits:
+    requests-per-minute-per-client: 30
+    # Pensados para el plan gratuito de VirusTotal (4 por minuto y 500 por día). Cada escaneo gasta
+    # hasta 10 pedidos: uno para iniciarlo y uno cada 20 s durante un máximo de 3 minutos.
+    scans-per-minute: 2
+    scans-per-day: 50
   # Cada servicio sin API key queda desactivado. Sin ninguna, la app funciona solo con heurísticas.
   urlscan:
     api-key: ${URLSCAN_API_KEY:}

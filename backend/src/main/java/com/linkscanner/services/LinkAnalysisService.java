@@ -1,12 +1,14 @@
 package com.linkscanner.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.linkscanner.config.DetectionProperties;
 import com.linkscanner.dtos.AnalyzeResponse;
+import com.linkscanner.entities.ContentScanStatus;
 import com.linkscanner.entities.Finding;
 import com.linkscanner.entities.ParsedUrl;
 import com.linkscanner.entities.Verdict;
@@ -19,13 +21,15 @@ public class LinkAnalysisService {
 	private final List<Heuristic> heuristics;
 	private final ContentScanService contentScans;
 	private final DetectionProperties detection;
+	private final ScanBudget scanBudget;
 
 	public LinkAnalysisService(UrlParser urlParser, List<Heuristic> heuristics, ContentScanService contentScans,
-			DetectionProperties detection) {
+			DetectionProperties detection, ScanBudget scanBudget) {
 		this.urlParser = urlParser;
 		this.heuristics = heuristics;
 		this.contentScans = contentScans;
 		this.detection = detection;
+		this.scanBudget = scanBudget;
 	}
 
 	public AnalyzeResponse analyze(String rawUrl, boolean deepScan) {
@@ -37,7 +41,11 @@ public class LinkAnalysisService {
 		boolean official = detection.isOfficialDomain(url.registrableDomain());
 		AnalyzeResponse analysis = AnalyzeResponse.of(url.unicodeHost(), official, findings);
 		boolean worthScanning = deepScan || analysis.verdict() == Verdict.SUSPICIOUS;
-		return worthScanning && canScanContent(url) ? contentScans.start(url.normalizedUrl(), analysis) : analysis;
+		if (!worthScanning || !canScanContent(url)) {
+			return analysis;
+		}
+		return scanBudget.tryAcquire() ? contentScans.start(url.normalizedUrl(), analysis)
+				: analysis.withContentScan(ContentScanStatus.UNAVAILABLE, null, Map.of(), List.of());
 	}
 
 	public Optional<AnalyzeResponse> scanResult(String scanId) {

@@ -11,10 +11,6 @@ API que analiza un link y responde si parece phishing. Usa Java 21 y Spring Boot
 
 ## Uso
 
-Para probarlo a mano, abrí http://localhost:8080 con el backend levantado. Esa página es solo para desarrollo: hay que sacarla antes de publicar el backend (`src/main/resources/static/index.html`).
-
-Por API:
-
 ```bash
 curl -X POST localhost:8080/api/v1/analyze \
   -H 'Content-Type: application/json' \
@@ -47,7 +43,7 @@ curl -X POST localhost:8080/api/v1/analyze \
 | `SAFE` | Puntaje menor a 30, y el dominio es oficial (`officialDomain: true`) o se revisó su contenido |
 | `UNKNOWN` | Puntaje menor a 30, sin verificar. **No significa seguro** |
 
-Un link inválido devuelve 400.
+Un link inválido devuelve 400, y pasar el límite de pedidos devuelve 429.
 
 ## Análisis externo (urlscan.io y VirusTotal)
 
@@ -80,6 +76,38 @@ Si `contentScan` viene en `PENDING`, consultá `GET /api/v1/analyze/{scanId}` ca
 | `UNAVAILABLE` | No se pudo verificar el contenido. **No significa que esté limpio** |
 
 Los análisis en curso se guardan en memoria durante 15 minutos: si el backend se reinicia, esos `scanId` devuelven 404.
+
+## Límites
+
+Se configuran en `linkscanner.limits`, dentro de `src/main/resources/application.yml`:
+
+| Límite | Valor | Al superarlo |
+|---|---|---|
+| Análisis por IP | 30 por minuto | Responde 429 |
+| Escaneos externos, sumando a todos los clientes | 2 por minuto y 50 por día | Responde con las heurísticas y `contentScan: UNAVAILABLE` |
+
+Los topes de escaneo protegen la cuota, pero no a los demás usuarios: alguien que los agote deja a todos sin escaneo externo hasta que se renueven. Evitarlo requiere autenticar a los clientes.
+
+## Publicarlo
+
+La imagen se construye desde la raíz del repo y corre con cualquier servicio de contenedores:
+
+```bash
+docker build -t linkscanner-backend .
+docker run -p 8080:8080 linkscanner-backend
+```
+
+Variables de entorno:
+
+| Variable | Para qué |
+|---|---|
+| `PORT` | Puerto donde escucha. Por defecto, 8080 |
+| `URLSCAN_API_KEY`, `VIRUSTOTAL_API_KEY` | Activan cada servicio externo. Cargalas como secretos del hosting, nunca en el repo |
+| `FORWARD_HEADERS_STRATEGY` | Poné `native` si hay un proxy delante, que es lo habitual en un hosting. Sin eso, todos los usuarios cuentan como una sola IP y comparten el límite. Sin proxy, dejala en `none` |
+
+Tiene que correr **en una sola instancia y siempre encendida**: los análisis en curso y los límites viven en memoria. El servicio debe ofrecer HTTPS, porque la app Android en versión release no acepta otra cosa. Para comprobar que está viva, usá `GET /actuator/health`.
+
+Después de publicarlo, instalá la app apuntando a la URL pública: `./gradlew installDebug -Plinkscanner.backendUrl=https://tu-dominio`.
 
 ## Dónde tocar
 

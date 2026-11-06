@@ -1,9 +1,7 @@
 package com.linkscanner.controllers;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,10 +25,8 @@ class AnalyzeControllerTest {
 	}
 
 	@Test
-	void servesTheManualTestPage() throws Exception {
-		mvc.perform(get("/index.html"))
-				.andExpect(status().isOk())
-				.andExpect(content().string(containsString("LinkScanner")));
+	void doesNotServeATestPage() throws Exception {
+		mvc.perform(get("/index.html")).andExpect(status().isNotFound());
 	}
 
 	@Test
