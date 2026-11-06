@@ -1,0 +1,116 @@
+spring:
+  application:
+    name: linkscanner-backend
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+
+linkscanner:
+  # Cada servicio sin API key queda desactivado. Sin ninguna, la app funciona solo con heurísticas.
+  urlscan:
+    api-key: ${URLSCAN_API_KEY:}
+    base-url: https://urlscan.io
+    visibility: private
+    timeout: 5s
+    first-poll-delay: 10s
+    poll-interval: 2s
+    max-wait: 2m
+  # Todo lo que recibe queda visible para su comunidad. El plan gratuito permite 4 pedidos por minuto
+  # y 500 por día, y no se puede usar en productos comerciales.
+  virustotal:
+    api-key: ${VIRUSTOTAL_API_KEY:}
+    base-url: https://www.virustotal.com
+    timeout: 5s
+    first-poll-delay: 30s
+    poll-interval: 20s
+    max-wait: 3m
+    min-malicious-engines: 2
+  # Datos de detección: se pueden ampliar sin tocar código.
+  detection:
+    brands:
+      - name: PayPal
+        keywords: [paypal]
+        official-domains: [paypal.com, paypal.me]
+      - name: Mercado Pago
+        keywords: [mercadopago]
+        official-domains: [mercadopago.com, mercadopago.com.ar, mercadopago.com.br]
+      - name: Mercado Libre
+        keywords: [mercadolibre]
+        official-domains: [mercadolibre.com, mercadolibre.com.ar, mercadolibre.com.mx, mercadolivre.com.br]
+      - name: Banco Galicia
+        keywords: [bancogalicia, galicia]
+        official-domains: [bancogalicia.com, bancogalicia.com.ar]
+      - name: BBVA
+        keywords: [bbva]
+        official-domains: [bbva.com, bbva.com.ar]
+      - name: Santander
+        keywords: [santander]
+        official-domains: [santander.com, santander.com.ar, santander.com.br, santanderrio.com.ar]
+      - name: Banco Macro
+        keywords: [bancomacro]
+        official-domains: [macro.com.ar]
+      - name: Banco Nación
+        keywords: [banconacion, bna]
+        official-domains: [bna.com.ar]
+      - name: Ualá
+        keywords: [uala]
+        official-domains: [uala.com.ar]
+      - name: Naranja X
+        keywords: [naranjax]
+        official-domains: [naranjax.com]
+      - name: Brubank
+        keywords: [brubank]
+        official-domains: [brubank.com]
+      - name: ARCA (ex AFIP)
+        keywords: [arca, afip]
+        official-domains: [arca.gob.ar, afip.gob.ar, afip.gov.ar]
+      - name: ANSES
+        keywords: [anses]
+        official-domains: [anses.gob.ar, anses.gov.ar]
+      - name: Correo Argentino
+        keywords: [correoargentino]
+        official-domains: [correoargentino.com.ar]
+    suspicious-tlds: [xyz, top, click, icu, buzz, cfd, sbs, rest, tk, ml, ga, cf, gq]
+    shorteners:
+      - bit.ly
+      - tinyurl.com
+      - t.co
+      - goo.gl
+      - is.gd
+      - ow.ly
+      - cutt.ly
+      - rebrand.ly
+      - buff.ly
+      - shorturl.at
+      - tiny.cc
+      - rb.gy
+    free-hosting-platforms:
+      - pages.dev
+      - vercel.app
+      - workers.dev
+      - netlify.app
+      - github.io
+      - blogspot.com
+      - gitbook.io
+      - weebly.com
+      - square.site
+    keywords:
+      - verificar
+      - verificacion
+      - validar
+      - seguridad
+      - suspendida
+      - suspendido
+      - bloqueada
+      - bloqueado
+      - token
+      - clave
+      - login
+      - homebanking
+      - actualizar
+      - reintegro
+      - reembolso
+      - premio

@@ -1,0 +1,47 @@
+package com.linkscanner.controllers;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.linkscanner.dtos.AnalyzeRequest;
+import com.linkscanner.dtos.AnalyzeResponse;
+import com.linkscanner.exceptions.InvalidUrlException;
+import com.linkscanner.services.LinkAnalysisService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/v1")
+public class AnalyzeController {
+
+	private final LinkAnalysisService analysisService;
+
+	public AnalyzeController(LinkAnalysisService analysisService) {
+		this.analysisService = analysisService;
+	}
+
+	@PostMapping("/analyze")
+	public AnalyzeResponse analyze(@Valid @RequestBody AnalyzeRequest request) {
+		return analysisService.analyze(request.url());
+	}
+
+	@GetMapping("/analyze/{scanId}")
+	public AnalyzeResponse scanResult(@PathVariable String scanId) {
+		return analysisService.scanResult(scanId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El análisis no existe o ya venció"));
+	}
+
+	@ExceptionHandler(InvalidUrlException.class)
+	ProblemDetail handleInvalidUrl(InvalidUrlException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+	}
+
+}
