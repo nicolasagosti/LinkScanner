@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LinkScanner</string>
+
+    <string name="main_description">Revisa cada link antes de abrirlo. Para eso tiene que ser tu navegador predeterminado: después podés abrir el link en tu navegador de siempre.</string>
+    <string name="role_active">Ya es tu navegador predeterminado.</string>
+    <string name="role_inactive">Todavía no es tu navegador predeterminado.</string>
+    <string name="set_default">Elegir como predeterminado</string>
+    <string name="test_title">Probar un link</string>
+    <string name="test_hint">https://ejemplo.com/</string>
+    <string name="test_button">Analizar</string>
+    <string name="invalid_link">Ese link no es válido.</string>
+    <string name="backend_label">Backend: %1$s</string>
+
+    <string name="analyzing">Analizando…</string>
+    <string name="verdict_safe">Seguro</string>
+    <string name="verdict_safe_text">No se encontraron riesgos suficientes para alertarte.</string>
+    <string name="verdict_unknown">Sin verificar</string>
+    <string name="verdict_unknown_text">No hay señales de riesgo, pero tampoco se pudo verificar. No significa que sea seguro.</string>
+    <string name="verdict_suspicious">Sospechoso</string>
+    <string name="verdict_suspicious_text">Tiene señales de riesgo.</string>
+    <string name="verdict_dangerous">Peligroso</string>
+    <string name="verdict_dangerous_text">Tiene señales fuertes de phishing. Lo mejor es no abrirlo.</string>
+    <string name="verdict_error">No se pudo analizar</string>
+    <string name="verdict_error_text">No se pudo conectar con el servicio. Esto no significa que el link sea seguro.</string>
+    <string name="score">Puntaje: %1$d / 100</string>
+    <string name="finding_item">• %1$s</string>
+
+    <string name="scan_skipped">No se revisó con servicios externos.</string>
+    <string name="scan_skipped_requested">No se pudo revisar: no es un sitio público o el servicio no está configurado.</string>
+    <string name="scan_pending">Revisando con urlscan y VirusTotal. Puede tardar más de un minuto…</string>
+    <string name="scan_completed">urlscan y VirusTotal ya revisaron el link.</string>
+    <string name="scan_unavailable">No todos los servicios pudieron revisar el link. Esto no significa que esté limpio.</string>
+    <string name="scan_interrupted">No se pudo terminar la revisión externa. Esto no significa que esté limpio.</string>
+
+    <string name="deep_scan">Revisar a fondo</string>
+    <string name="deep_scan_hint">Manda el link a urlscan y VirusTotal. Evitalo en links con datos personales o de un solo uso, como los de cambio de contraseña.</string>
+    <string name="retry">Reintentar</string>
+    <string name="open">Abrir</string>
+    <string name="open_anyway">Abrir igual</string>
+    <string name="do_not_open">No abrir</string>
+    <string name="open_with">Abrir con</string>
+    <string name="no_browser">No hay otro navegador instalado para abrir el link.</string>
+    <string name="confirm_title">¿Abrir un link peligroso?</string>
+    <string name="confirm_text">Podría pedirte contraseñas o datos de tus cuentas.</string>
+</resources>

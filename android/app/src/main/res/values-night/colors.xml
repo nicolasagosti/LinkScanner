@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="verdict_safe">#4CC384</color>
+    <color name="verdict_unknown">#A0A8B3</color>
+    <color name="verdict_suspicious">#E5A93C</color>
+    <color name="verdict_dangerous">#F27272</color>
+</resources>
